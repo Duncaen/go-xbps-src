@@ -65,8 +65,8 @@ const (
 	LintVariables
 	// LintSubPackages flag enables sub package linting.
 	LintSubPackages
-	// LintAll flag enables all available lint flags.
-	LintAll = LintHeader | LintFunctions | LintVariables | LintSubPackages
+	// LintDefault flag enables all available lint flags.
+	LintDefault = LintHeader | LintFunctions | LintVariables | LintSubPackages
 )
 
 type linter struct {
@@ -114,7 +114,7 @@ func Lint(r io.Reader, name string, flags ...int) ([]Error, error) {
 		flag |= f
 	}
 	if flag == 0 {
-		flag = LintAll
+		flag = LintDefault
 	}
 	if flag&LintHeader != 0 {
 		l.header()
