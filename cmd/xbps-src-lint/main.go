@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Duncaen/xbps-src-go/linter"
+	"github.com/Duncaen/go-xbps-src/linter"
 )
 
 func main() {

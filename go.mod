@@ -1,4 +1,4 @@
-module github.com/Duncaen/xbps-src-go
+module github.com/Duncaen/go-xbps-src
 
 go 1.12
 
