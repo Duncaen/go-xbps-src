@@ -95,6 +95,17 @@ func (b *Bulk) load(c Config, pkgname string) error {
 	if _, ok := b.variables[c][pkgname]; ok {
 		return nil
 	}
+	// XXX: handle -32bit and -dbg correct
+	if strings.HasSuffix(pkgname, "-32bit") {
+		b.variables[c][pkgname] = make(map[string]string)
+		b.variables[c][pkgname]["sourcepkg"] = strings.TrimSuffix(pkgname, "-32bit")
+		return nil
+	}
+	if strings.HasSuffix(pkgname, "-dbg") {
+		b.variables[c][pkgname] = make(map[string]string)
+		b.variables[c][pkgname]["sourcepkg"] = strings.TrimSuffix(pkgname, "-dbg")
+		return nil
+	}
 	// check if we parsed the template already
 	t, ok := b.templates[pkgname]
 	if !ok {
@@ -102,7 +113,8 @@ func (b *Bulk) load(c Config, pkgname string) error {
 		path := path.Join(b.Distdir, "srcpkgs", pkgname, "template")
 		t, err = template.ParseFile(path)
 		if err != nil {
-			return err
+			log.Print(err)
+			return nil
 		}
 		b.templates[pkgname] = t
 		log.Println("parsed template", path)
