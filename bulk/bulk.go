@@ -19,7 +19,7 @@ type Config struct {
 
 func (c Config) String() string {
 	if c.Cross != "" {
-		strings.Join([]string{c.Cross, c.Arch}, "@")
+		return strings.Join([]string{c.Cross, c.Arch}, "@")
 	}
 	return c.Arch
 }
