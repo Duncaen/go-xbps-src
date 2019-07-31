@@ -79,7 +79,7 @@ func main() {
 			}
 		}
 	}
-	xsc := fmt.Sprintf("%s/xbps-src ", *distdir)
+	xsc := fmt.Sprintf("%s/xbps-src %s", *distdir, *flags)
 	if *cross != "" {
 		xsc += " -a " 
 		xsc += *cross
