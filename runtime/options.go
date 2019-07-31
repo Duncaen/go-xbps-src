@@ -1,4 +1,4 @@
-package template
+package runtime
 
 import (
 	"strings"
@@ -7,21 +7,23 @@ import (
 	"mvdan.cc/sh/expand"
 )
 
-type OptionsCtxKey struct{}
-
 type Options map[string]bool
 
-func (o Options) setFromTemplateVars (opts, defs string) Options {
-	for _, opt := range strings.Fields(defs) {
+// Defaults adds all options from str and sets them to true
+func (o Options) Defaults(str string) {
+	for _, opt := range strings.Fields(str) {
 		o[opt] = true
 	}
-	for _, opt := range strings.Fields(opts) {
+}
+
+// Add adds all options from str without overwriting previous set options
+func (o Options) Add(str string) {
+	for _, opt := range strings.Fields(str) {
 		if _, ok := o[opt]; ok {
 			continue
 		}
 		o[opt] = false
 	}
-	return o
 }
 
 func (o Options) String() string {

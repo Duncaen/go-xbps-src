@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/Duncaen/go-xbps-src/runtime"
+
 	"mvdan.cc/sh/syntax"
 )
 
@@ -12,7 +14,7 @@ type Template struct {
 	file *syntax.File
 }
 
-// ParseFile
+// ParseFile parses the template at path
 func ParseFile(path string) (*Template, error) {
 	r, err := os.Open(path)
 	if err != nil {
@@ -22,7 +24,7 @@ func ParseFile(path string) (*Template, error) {
 	return Parse(r, path)
 }
 
-// Parse
+// Parse parses a template from r
 func Parse(r io.Reader, name string) (*Template, error) {
 	parser := syntax.NewParser(syntax.Variant(syntax.LangBash))
 	f, err := parser.Parse(r, name)
@@ -32,5 +34,14 @@ func Parse(r io.Reader, name string) (*Template, error) {
 	if parser.Incomplete() {
 		return nil, errors.New("inclomplete")
 	}
-	return &Template{file: f}, nil
+	t := &Template{file: f}
+	return t, nil
+}
+
+// Eval evaluates a template
+func (t *Template) Eval(
+	runtime *runtime.Runtime,
+	arch, cross string,
+) ([]map[string]string, error) {
+	return runtime.Eval(t.file, arch, cross)
 }

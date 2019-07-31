@@ -1,8 +1,9 @@
-package template
+package runtime
 
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 
 	"mvdan.cc/sh/interp"
@@ -34,11 +35,11 @@ func shVoptIf(ctx context.Context, args []string) error {
 		return errors.New("missing argument")
 	}
 
-	switch x := ctx.Value(OptionsCtxKey{}).(type) {
+	switch x := ctx.Value("options").(type) {
 	case Options:
 		var ok bool
 		if v, ok = x[opt]; !ok {
-			return errors.New("invalid option")
+			return fmt.Errorf("invalid option: %q", opt)
 		}
 	}
 
