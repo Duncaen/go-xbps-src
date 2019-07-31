@@ -122,7 +122,8 @@ func (b *Bulk) load(c Config, pkgname string) error {
 	log.Printf("evaluating %q for %s\n", pkgname, c)
 	vs, err := t.Eval(b.runtime, c.Arch, c.Cross)
 	if err != nil {
-		return err
+		log.Print(err)
+		return nil
 	}
 	for _, vars := range vs {
 		pkgname := vars["pkgname"]
