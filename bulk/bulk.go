@@ -58,7 +58,7 @@ func New(distdir string, configs ...Config) (*Bulk, error) {
 }
 
 func (b *Bulk) loadDeps(c Config, vars map[string]string) error {
-	for _, k := range []string{"hostmakedepends", "makedepends"} {
+	for _, k := range []string{"hostmakedepends", "makedepends", "depends"} {
 		deps, ok := vars[k]
 		if !ok {
 			continue
@@ -79,7 +79,7 @@ func (b *Bulk) deps(c Config, pkgname string) []string {
 	if !ok {
 		return res
 	}
-	for _, k := range []string{"hostmakedepends", "makedepends"} {
+	for _, k := range []string{"hostmakedepends", "makedepends", "depends"} {
 		deps, ok := vars[k]
 		if !ok {
 			continue

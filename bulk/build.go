@@ -65,7 +65,7 @@ func (e *explicit) Deps(pkgname string) []string {
 		return res
 	}
 	uniq := make(map[string]interface{})
-	for _, k := range []string{"hostmakedepends", "makedepends"} {
+	for _, k := range []string{"hostmakedepends", "makedepends", "depends"} {
 		deps, ok := vars[k]
 		if !ok {
 			continue
