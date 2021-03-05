@@ -22,6 +22,7 @@ func limitedExec(ctx context.Context, path string, args []string) error {
 	case "vopt_bool":
 	case "date":
 	case "xbps-uhelper":
+	case "seq":
 	default:
 		panic(args[0])
 	}
