@@ -1,8 +1,8 @@
 package runtime
 
 import (
-	"strings"
 	"fmt"
+	"strings"
 
 	"mvdan.cc/sh/expand"
 )
@@ -55,13 +55,13 @@ func (o Options) Get(name string) expand.Variable {
 	return expand.Variable{
 		Exported: false,
 		ReadOnly: true,
-		Local: true,
-		Value: val,
+		Local:    true,
+		Value:    val,
 	}
 }
 
 // Each implements the expand.Environ interface for build options.
-func (o Options) Each(fn func (string, expand.Variable) bool) {
+func (o Options) Each(fn func(string, expand.Variable) bool) {
 	for k, v := range o {
 		val := ""
 		if v {
@@ -70,8 +70,8 @@ func (o Options) Each(fn func (string, expand.Variable) bool) {
 		fn(fmt.Sprintf("build_option_%s", k), expand.Variable{
 			Exported: false,
 			ReadOnly: true,
-			Local: true,
-			Value: val,
+			Local:    true,
+			Value:    val,
 		})
 	}
 }

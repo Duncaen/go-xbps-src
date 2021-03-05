@@ -3,6 +3,7 @@ module github.com/Duncaen/go-xbps-src
 go 1.12
 
 require (
+	github.com/Duncaen/go-xbps v0.0.0-20190626161642-914cebb42ace
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/kr/pty v1.1.8 // indirect
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4 // indirect

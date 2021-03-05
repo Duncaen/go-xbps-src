@@ -16,7 +16,7 @@ func (e Environ) Get(name string) expand.Variable {
 }
 
 // Each iterates over all the currently set variables
-func (e Environ) Each(fn func (string, expand.Variable) bool) {
+func (e Environ) Each(fn func(string, expand.Variable) bool) {
 	for k, v := range e {
 		fn(k, v)
 	}
@@ -37,7 +37,7 @@ func (e MultiEnviron) Get(name string) expand.Variable {
 }
 
 // Each iterates over all the currently set variables, in every environ
-func (e MultiEnviron) Each(fn func (string, expand.Variable) bool) {
+func (e MultiEnviron) Each(fn func(string, expand.Variable) bool) {
 	for _, env := range e {
 		env.Each(fn)
 	}

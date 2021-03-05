@@ -2,12 +2,12 @@ package main
 
 import (
 	"flag"
-	"log"
-	"os"
-	"io/ioutil"
-	"path"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"log"
+	"os"
+	"path"
 	"strings"
 
 	"github.com/Duncaen/go-xbps-src/bulk"
@@ -30,14 +30,13 @@ clean:
 .PHONY: all print_pkgs clean
 `
 
-
 var (
-	distdir = flag.String("distdir", os.ExpandEnv("${HOME}/void-packages"), "void-packages repository path")
+	distdir   = flag.String("distdir", os.ExpandEnv("${HOME}/void-packages"), "void-packages repository path")
 	masterdir = flag.String("masterdir", "masterdir", "hostdir")
-	hostdir = flag.String("hostdir", "hostdir", "masterdir")
-	arch = flag.String("arch", "x86_64", "build architecture")
-	cross = flag.String("cross", "", "cross architecture")
-	flags = flag.String("flags", "-N -t -L -E", "xbps-src flags")
+	hostdir   = flag.String("hostdir", "hostdir", "masterdir")
+	arch      = flag.String("arch", "x86_64", "build architecture")
+	cross     = flag.String("cross", "", "cross architecture")
+	flags     = flag.String("flags", "-N -t -L -E", "xbps-src flags")
 )
 
 func all(b *bulk.Bulk) error {
@@ -61,9 +60,9 @@ func main() {
 	flag.Parse()
 	b, err := bulk.New(*distdir, bulk.Config{
 		Masterdir: *masterdir,
-		Hostdir: *hostdir,
-		Arch: *arch,
-		Cross: *cross,
+		Hostdir:   *hostdir,
+		Arch:      *arch,
+		Cross:     *cross,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -81,15 +80,15 @@ func main() {
 	}
 	xsc := fmt.Sprintf("%s/xbps-src %s", *distdir, *flags)
 	if *cross != "" {
-		xsc += " -a " 
+		xsc += " -a "
 		xsc += *cross
 	}
 	if *masterdir != "" {
-		xsc += " -m " 
+		xsc += " -m "
 		xsc += *masterdir
 	}
 	if *hostdir != "" {
-		xsc += " -H " 
+		xsc += " -H "
 		xsc += *hostdir
 	}
 	io.WriteString(os.Stdout, "# generated with xbps-src-make\n")
@@ -100,7 +99,7 @@ func main() {
 	fmt.Fprintf(os.Stdout, "\t@( %s pkg ${@F}; rval=$$?; [ $$rval -eq 2 ] && exit 0 || exit $$rval )\n", xsc)
 	io.WriteString(os.Stdout, "\t@touch $@\n")
 	io.WriteString(os.Stdout, "\t@rm tobuild/${@F}\n\n")
-	
+
 	for _, bu := range b.Edges() {
 		fmt.Fprintf(os.Stdout, "built/%s:", bu.Pkgname)
 		for _, deppkg := range bu.Deps {

@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path"
@@ -12,6 +13,7 @@ import (
 
 const envFilesSubPkg = "common/environment/setup-subpkg/*.sh"
 const envFilesBuildStyle = "common/environment/build-style/*.sh"
+const virtualPkgDefaults = "etc/defaults.virtual"
 
 type Runtime struct {
 	setupSubpkg   []*syntax.File
@@ -19,6 +21,7 @@ type Runtime struct {
 	parser        *syntax.Parser
 	distdir       string
 	env           Environ
+	virtdefs      map[string]string
 }
 
 // Parse parses a bash script
@@ -76,5 +79,36 @@ func New(distdir string) (*Runtime, error) {
 		r.buildStyleEnv[name] = f
 	}
 
+	r.virtdefs = make(map[string]string)
+	pat = path.Join(r.distdir, virtualPkgDefaults)
+	file, err := os.Open(pat)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if len(line) == 0 || strings.HasPrefix(line, "#") {
+			continue
+		}
+		fields := strings.Fields(line)
+		if len(fields) != 2 {
+			panic("invalid default virtual dependency")
+		}
+		r.virtdefs[fields[0]] = fields[1]
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
 	return r, nil
+}
+
+// GetVirtual
+func (r *Runtime) GetVirtual(pkgname string) (string, error) {
+	if pkg, ok := r.virtdefs[pkgname]; ok {
+		return pkg, nil
+	}
+	return "", fmt.Errorf("virtual package not in defaults: %s", pkgname)
 }

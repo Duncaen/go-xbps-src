@@ -1,12 +1,21 @@
 package bulk
 
 import (
+	"fmt"
 	"strings"
+
+	"github.com/Duncaen/go-xbps/pkgver"
 )
 
 type Build struct {
 	Pkgname string
-	Deps []string
+	Deps    []string
+}
+
+var cycle map[string]bool
+
+func init() {
+	cycle = make(map[string]bool)
 }
 
 // func (b *Bulk) edgeDeps(c Config, pkgname string) []string {
@@ -33,9 +42,9 @@ type Build struct {
 // }
 
 type explicit struct {
-	bulk *Bulk
+	bulk   *Bulk
 	config Config
-	cache map[string][]string
+	cache  map[string][]string
 }
 
 func (e *explicit) Mainpkg(pkgname string) string {
@@ -55,17 +64,24 @@ func (e *explicit) IsEdge(pkgname string) bool {
 	return false
 }
 
-func (e *explicit) Deps(pkgname string) []string {
+func (e *explicit) Deps(pkgname string, stack []string) []string {
+	stack = append(stack, pkgname)
+	if cycle[pkgname] {
+		panic(fmt.Sprintf("cycle: %s %t", pkgname, stack))
+	}
+	cycle[pkgname] = true
 	var res []string
 	if deps, ok := e.cache[pkgname]; ok {
+		cycle[pkgname] = false
 		return deps
 	}
 	vars, ok := e.bulk.variables[e.config][pkgname]
 	if !ok {
+		cycle[pkgname] = false
 		return res
 	}
 	uniq := make(map[string]interface{})
-	for _, k := range []string{"hostmakedepends", "makedepends", "depends"} {
+	for _, k := range []string{"hostmakedepends", "makedepends"} {
 		deps, ok := vars[k]
 		if !ok {
 			continue
@@ -75,7 +91,50 @@ func (e *explicit) Deps(pkgname string) []string {
 			if e.IsEdge(mainpkg) {
 				uniq[mainpkg] = nil
 			}
-			for _, dep := range e.Deps(mainpkg) {
+			for _, dep := range e.Deps(mainpkg, stack) {
+				uniq[dep] = nil
+			}
+		}
+	}
+
+	deps, ok := vars["depends"]
+	if ok {
+		var subpkgs []string
+		if s, ok := vars["subpackages"]; ok {
+			subpkgs = strings.Fields(s)
+		}
+		for _, dep := range strings.Fields(deps) {
+			if strings.HasPrefix(dep, "virtual?") {
+				var err error
+				dep = strings.TrimPrefix(dep, "virtual?")
+				pkg, err := pkgver.Parse(dep)
+				if err != nil {
+					panic(err)
+				}
+				dep, err = e.bulk.runtime.GetVirtual(pkg.Name)
+				if err != nil {
+					panic(err)
+				}
+			}
+			pkg, err := pkgver.Parse(dep)
+			if err != nil {
+				panic(err)
+			}
+			issub := false
+			mainpkg := e.Mainpkg(pkg.Name)
+			for _, sub := range subpkgs {
+				if sub == pkg.Name {
+					issub = true
+					break
+				}
+			}
+			if issub {
+				continue
+			}
+			if e.IsEdge(mainpkg) {
+				uniq[mainpkg] = nil
+			}
+			for _, dep := range e.Deps(mainpkg, stack) {
 				uniq[dep] = nil
 			}
 		}
@@ -84,6 +143,7 @@ func (e *explicit) Deps(pkgname string) []string {
 		res = append(res, k)
 	}
 	e.cache[pkgname] = res
+	cycle[pkgname] = false
 	return res
 }
 
@@ -94,7 +154,7 @@ func (b *Bulk) Edges() []Build {
 		for _, pkgname := range b.edges {
 			b := Build{
 				Pkgname: pkgname,
-				Deps: e.Deps(pkgname),
+				Deps:    e.Deps(pkgname, []string{}),
 			}
 			res = append(res, b)
 		}

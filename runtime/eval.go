@@ -123,7 +123,6 @@ func (r *Runtime) Eval(
 	arch, cross string,
 ) ([]map[string]string, error) {
 
-
 	env := r.Env(arch, cross)
 	opts := make(Options)
 
@@ -133,7 +132,6 @@ func (r *Runtime) Eval(
 	}
 	run.Exec = limitedExec
 	run.Open = limitedOpen
-
 
 	// pass 1 to get options
 	if err := run.Run(context.TODO(), file); err != nil {
@@ -168,7 +166,8 @@ func (r *Runtime) Eval(
 	}
 
 	var vars []map[string]string
-	vars = append(vars, templateVars(run.Vars))
+	mainvars := templateVars(run.Vars)
+	vars = append(vars, mainvars)
 
 	subpkgs := getSubPackages(run)
 	if len(subpkgs) == 0 {
@@ -179,6 +178,7 @@ func (r *Runtime) Eval(
 	if err != nil {
 		return nil, err
 	}
+	mainvars["subpackages"] = strings.Join(subpkgs, " ")
 	return append(vars, subvars...), nil
-	
+
 }

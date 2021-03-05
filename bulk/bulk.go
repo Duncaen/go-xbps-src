@@ -1,19 +1,21 @@
 package bulk
 
 import (
+	"log"
 	"path"
 	"strings"
-	"log"
 
-	"github.com/Duncaen/go-xbps-src/template"
 	"github.com/Duncaen/go-xbps-src/runtime"
+	"github.com/Duncaen/go-xbps-src/template"
+
+	"github.com/Duncaen/go-xbps/pkgver"
 )
 
 // Config represents a build configuration
 type Config struct {
-	Arch string
-	Cross string
-	Hostdir string
+	Arch      string
+	Cross     string
+	Hostdir   string
 	Masterdir string
 }
 
@@ -49,16 +51,16 @@ func New(distdir string, configs ...Config) (*Bulk, error) {
 		variables[c] = make(map[string]map[string]string)
 	}
 	return &Bulk{
-		Distdir: distdir,
-		Configs: configs,
+		Distdir:   distdir,
+		Configs:   configs,
 		templates: make(map[string]*template.Template),
 		variables: variables,
-		runtime: runtime,
+		runtime:   runtime,
 	}, nil
 }
 
 func (b *Bulk) loadDeps(c Config, vars map[string]string) error {
-	for _, k := range []string{"hostmakedepends", "makedepends", "depends"} {
+	for _, k := range []string{"hostmakedepends", "makedepends"} {
 		deps, ok := vars[k]
 		if !ok {
 			continue
@@ -70,23 +72,30 @@ func (b *Bulk) loadDeps(c Config, vars map[string]string) error {
 			}
 		}
 	}
-	return nil
-}
-
-func (b *Bulk) deps(c Config, pkgname string) []string {
-	var res []string
-	vars, ok := b.variables[c][pkgname]
-	if !ok {
-		return res
-	}
-	for _, k := range []string{"hostmakedepends", "makedepends", "depends"} {
-		deps, ok := vars[k]
-		if !ok {
-			continue
+	if deps, ok := vars["depends"]; ok {
+		for _, dep := range strings.Fields(deps) {
+			if strings.HasPrefix(dep, "virtual?") {
+				dep = strings.TrimPrefix(dep, "virtual?")
+				pkg, err := pkgver.Parse(dep)
+				if err != nil {
+					return err
+				}
+				dep, err = b.runtime.GetVirtual(pkg.Name)
+				if err != nil {
+					return err
+				}
+			}
+			pkg, err := pkgver.Parse(dep)
+			if err != nil {
+				return err
+			}
+			err = b.load(c, pkg.Name)
+			if err != nil {
+				return err
+			}
 		}
-		res = append(res, strings.Fields(deps)...)
 	}
-	return res
+	return nil
 }
 
 // load evaluates a template with the given config and returns its variables

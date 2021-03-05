@@ -28,7 +28,7 @@ func (r *Runtime) Env(arch, cross string) Environ {
 			ReadOnly: true,
 			Value:    "xbps-uhelper",
 		},
-		"XBPS_MACHINE": m,
+		"XBPS_MACHINE":        m,
 		"XBPS_TARGET_MACHINE": t,
 	}
 }

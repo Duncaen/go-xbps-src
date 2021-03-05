@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	distdir = flag.String("distdir", "/home/duncan/void-packages", "distdir")
-	arch = flag.String("arch", "x86_64", "architecture")
-	cross = flag.String("cross", "", "cross architecture")
+	distdir   = flag.String("distdir", "/home/duncan/void-packages", "distdir")
+	arch      = flag.String("arch", "x86_64", "architecture")
+	cross     = flag.String("cross", "", "cross architecture")
 	variables = []string{
 		"version",
 		"revision",

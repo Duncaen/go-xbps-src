@@ -1,8 +1,8 @@
 package template
 
 import (
-	"strings"
 	"fmt"
+	"strings"
 
 	"mvdan.cc/sh/expand"
 )
@@ -11,7 +11,7 @@ type OptionsCtxKey struct{}
 
 type Options map[string]bool
 
-func (o Options) setFromTemplateVars (opts, defs string) Options {
+func (o Options) setFromTemplateVars(opts, defs string) Options {
 	for _, opt := range strings.Fields(defs) {
 		o[opt] = true
 	}
@@ -53,13 +53,13 @@ func (o Options) Get(name string) expand.Variable {
 	return expand.Variable{
 		Exported: false,
 		ReadOnly: true,
-		Local: true,
-		Value: val,
+		Local:    true,
+		Value:    val,
 	}
 }
 
 // Each implements the expand.Environ interface for build options.
-func (o Options) Each(fn func (string, expand.Variable) bool) {
+func (o Options) Each(fn func(string, expand.Variable) bool) {
 	for k, v := range o {
 		val := ""
 		if v {
@@ -68,8 +68,8 @@ func (o Options) Each(fn func (string, expand.Variable) bool) {
 		fn(fmt.Sprintf("build_option_%s", k), expand.Variable{
 			Exported: false,
 			ReadOnly: true,
-			Local: true,
-			Value: val,
+			Local:    true,
+			Value:    val,
 		})
 	}
 }
