@@ -20,9 +20,11 @@ func limitedExec(ctx context.Context, path string, args []string) error {
 	case "vopt_enable":
 	case "vopt_conflict":
 	case "vopt_bool":
+	case "vopt_feature":
 	case "date":
 	case "xbps-uhelper":
 	case "seq":
+	case "cut":
 	default:
 		panic(args[0])
 	}
