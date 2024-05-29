@@ -80,6 +80,11 @@ func (e *explicit) Deps(pkgname string, stack []string) []string {
 		cycle[pkgname] = false
 		return res
 	}
+	var subpkgs []string
+	if s, ok := vars["subpackages"]; ok {
+		subpkgs = strings.Fields(s)
+	}
+
 	uniq := make(map[string]interface{})
 	for _, k := range []string{"hostmakedepends", "makedepends"} {
 		deps, ok := vars[k]
@@ -87,6 +92,16 @@ func (e *explicit) Deps(pkgname string, stack []string) []string {
 			continue
 		}
 		for _, dep := range strings.Fields(deps) {
+			issub := false
+			for _, sub := range subpkgs {
+				if sub == dep {
+					issub = true
+					break
+				}
+			}
+			if issub {
+				continue
+			}
 			mainpkg := e.Mainpkg(dep)
 			if e.IsEdge(mainpkg) {
 				uniq[mainpkg] = nil
@@ -99,10 +114,6 @@ func (e *explicit) Deps(pkgname string, stack []string) []string {
 
 	deps, ok := vars["depends"]
 	if ok {
-		var subpkgs []string
-		if s, ok := vars["subpackages"]; ok {
-			subpkgs = strings.Fields(s)
-		}
 		for _, dep := range strings.Fields(deps) {
 			if strings.HasPrefix(dep, "virtual?") {
 				var err error
