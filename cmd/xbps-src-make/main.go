@@ -16,18 +16,34 @@ import (
 var rules = `
 TOBUILD = $(patsubst %,tobuild/%,$(PKGS))
 BUILT = $(patsubst tobuild/%,built/%,$(TOBUILD))
+SORT :=
+
+.PHONY: all sort print_pkgs clean
 
 all: $(BUILT)
 	@echo "[Done]"
 
+sort:
+	@$(MAKE) SORT=1 all
+	mv built/* tobuild
+
 print_pkgs:
-	@echo $(PKGS)
+	@( [ -f pkgs-sorted.txt ] && cat pkgs-sorted.txt | xargs || echo $(PKGS) )
 
 clean:
-	@rm -f built/*
+	@rm -f built/* pkgs.txt pkgs-sorted.txt repo-checkvers.txt
 	@echo "[Clean]"
 
-.PHONY: all print_pkgs clean
+built/%: tobuild/%
+	@echo "[xbps-src]       ${@F}"
+ifdef SORT
+	@echo ${@F} >> pkgs-sorted.txt
+else
+	@( $(XSC) pkg ${@F}; rval=$$?; [ $$rval -eq 2 ] && exit 0 || exit $$rval )
+endif
+	@touch $@
+	@rm tobuild/${@F}
+
 `
 
 var (
@@ -93,12 +109,8 @@ func main() {
 	}
 	io.WriteString(os.Stdout, "# generated with xbps-src-make\n")
 	fmt.Fprintf(os.Stdout, "PKGS = %s\n", strings.Join(flag.Args(), " "))
+	fmt.Fprintf(os.Stdout, "XSC = %s\n", xsc)
 	io.WriteString(os.Stdout, rules)
-	io.WriteString(os.Stdout, "built/%: tobuild/%\n")
-	io.WriteString(os.Stdout, "\t@echo \"[xbps-src]       ${@F}\"\n")
-	fmt.Fprintf(os.Stdout, "\t@( %s pkg ${@F}; rval=$$?; [ $$rval -eq 2 ] && exit 0 || exit $$rval )\n", xsc)
-	io.WriteString(os.Stdout, "\t@touch $@\n")
-	io.WriteString(os.Stdout, "\t@rm tobuild/${@F}\n\n")
 
 	for _, bu := range b.Edges() {
 		fmt.Fprintf(os.Stdout, "built/%s:", bu.Pkgname)
