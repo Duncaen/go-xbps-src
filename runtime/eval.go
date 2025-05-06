@@ -127,7 +127,7 @@ func getSubPackages(run *interp.Runner) []string {
 	}
 	var res []string
 	for fn, _ := range run.Funcs {
-		if len(fn) < len("_package") {
+		if len(fn) <= len("_package") {
 			continue
 		}
 		if s := fn[len(fn)-len("_package"):]; s == "_package" {
