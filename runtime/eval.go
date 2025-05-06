@@ -27,6 +27,7 @@ func limitedExec(ctx context.Context, path string, args []string) error {
 	case "xbps-uhelper":
 	case "seq":
 	case "cut":
+	case "grep":
 	default:
 		panic(args[0])
 	}
