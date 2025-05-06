@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	// "io/fs"
+	"log"
 	"os"
 	"strings"
 
@@ -31,9 +33,24 @@ func limitedExec(ctx context.Context, path string, args []string) error {
 	return nil
 }
 
+type null struct{}
+
+func (n null) Read(b []byte) (int, error) {
+	return 0, io.EOF
+}
+
+func (n null) Write(b []byte) (int, error) {
+	return 0, io.ErrClosedPipe
+}
+
+func (n null) Close() error {
+	return nil
+}
+
 func limitedOpen(ctx context.Context, path string, flag int, perm os.FileMode) (io.ReadWriteCloser, error) {
-	panic("open")
-	return nil, nil
+	log.Printf("warn: open: %s: skipped\n", path)
+	// return nil, fs.ErrPermission
+	return null{}, nil
 }
 
 // evalSubPkgs
