@@ -25,7 +25,8 @@ all: $(BUILT)
 
 sort:
 	@$(MAKE) SORT=1 all
-	mv built/* tobuild
+	@[ -n "$(PKGS)" ] && mv built/* tobuild || :
+	@echo "[Sorted]"
 
 print_pkgs:
 	@( [ -f pkgs-sorted.txt ] && cat pkgs-sorted.txt | xargs || echo $(PKGS) )
